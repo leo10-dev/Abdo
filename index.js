@@ -19,25 +19,13 @@ const channelIds = ['1255391110415515678', '1255391112718323790', '1255391116740
 client.once('ready', () => {
     console.log('Bot is ready.');
 
-
-    setInterval(() => {
+    setInterval(async () => {
         const now = new Date();
-        const currentHour = now.getUTCHours(); 
+        const currentHour = now.getUTCHours();
         const currentMinute = now.getUTCMinutes();
 
-     
         const astOffset = 3;
 
-        
-        const currentHourAst = (currentHour + astOffset) % 24;
-
-        
-        const openHour = 9; 
-        const openMinute = 0;
-        const closeHour = 3;
-        const closeMinute = 0;
-
-        
         const utcToAst = (hour, minute) => {
             let astHour = (hour + astOffset) % 24;
             let astMinute = minute;
@@ -49,22 +37,19 @@ client.once('ready', () => {
             return { hour: astHour, minute: astMinute };
         };
 
-        
-        channelIds.forEach(async channelId => {
+        channelIds.forEach(async (channelId) => {
             try {
                 const channel = await client.channels.fetch(channelId);
                 const llll = await client.channels.fetch('1243118161017180212');
-
 
                 if (!channel) {
                     console.error(`Channel with ID ${channelId} not found.`);
                     return;
                 }
 
-            
                 const currentAstTime = utcToAst(currentHour, currentMinute);
-                const openAstTime = { hour: openHour, minute: openMinute };
-                const closeAstTime = { hour: closeHour, minute: closeMinute };
+                const openAstTime = { hour: 9, minute: 0 }; // Adjust these times as needed
+                const closeAstTime = { hour: 3, minute: 0 }; // Adjust these times as needed
 
                 const isOpenTime =
                     currentAstTime.hour === openAstTime.hour && currentAstTime.minute === openAstTime.minute;
@@ -72,33 +57,26 @@ client.once('ready', () => {
                     currentAstTime.hour === closeAstTime.hour && currentAstTime.minute === closeAstTime.minute;
 
                 if (isOpenTime) {
-            
                     await channel.permissionOverwrites.edit(channel.guild.roles.everyone, {
                         VIEW_CHANNEL: true,
                     });
 
-
                     console.log(`Channel ${channel.name} (${channelId}) shown.`);
-
-                    llll.send(`** > - تـم أرجـاع رومـات الـبـيـ$ـع ، الـنـشـر مـفـتـوح .**`)
-
-
+                    llll.send(`** > - تـم أرجـاع رومـات الـبـيـ$ـع ، الـنـشـر مـفـتـوح .**`);
                 } else if (isCloseTime) {
-                    
                     await channel.permissionOverwrites.edit(channel.guild.roles.everyone, {
                         VIEW_CHANNEL: false,
                     });
-                    console.log(`Channel ${channel.name} (${channelId}) hidden.`);
 
-                    llll.send(`** > - تـم أخـفـاء رومـات الـبـيـ$ـع ، الـنـشـر مـقـفـول .**`)
+                    console.log(`Channel ${channel.name} (${channelId}) hidden.`);
+                    llll.send(`** > - تـم أخـفـاء رومـات الـبـيـ$ـع ، الـنـشـر مـقـفـول .**`);
                 }
             } catch (error) {
-                console.error(`Error processing channel ${channelId}:`, error);
+                console.error(`Error processing channel ${channelId}:`, error.message);
             }
         });
     }, 60000); 
 });
-
 
 
 client.on('messageCreate', message => {
@@ -112,7 +90,7 @@ client.on('messageCreate', message => {
 
      
         if (command === 'ping') {
-            message.reply('Pong!');
+            message.reply('kk');
         }
         
     }
@@ -129,7 +107,7 @@ client.on('messageCreate', message => {
             .setThumbnail(message.guild.iconURL())
             .setTitle('> Hollywoos ``S`` Support・ الدعم الفني')
             .setImage('https://media.discordapp.net/attachments/1255860288775917693/1255905752023830609/New_Project_251_A79F1CB.png?ex=667ed4e0&is=667d8360&hm=ebe4db3ca6f2bff75e5d51ee709fd8e629d9dfda2471c6ed76e29efb44d315f2&=&format=webp&quality=lossless&width=1440&height=525')
-            .setDescription('> اذا كان لديك إي استفسار , تبي تشتري رتبة / اعلان / منشور مميز الخ.. اختار الدعم الفني \n >  اذا بغيت شي وما لقيته في السيرفر اختر الطلبات الخاصه \n > اذا كان لديك شكوى على أحد من طاقم الادارة اختار  "شكاوي على "طاقم الادارة\n > ملاحظات  \n \n <:> يمنع فتح تكت لسبب لا يخص السيرفر \n <:> يرجى عدم الازعاج بالمنشن او السبام \n <:> يمنع الاستهبال او فتح تكت بدون سبب \n <:> يمنع الخمول في التكت \n **<:> مخالفة أي من القوانين سيعرضك للميوت او التايم **')
+            .setDescription('> اذا كان لديك إي استفسار , تبي تشتري رتبة / اعلان / منشور مميز الخ.. اختار الدعم الفني \n >  اذا بغيت شي وما لقيته في السيرفر اختر الطلبات الخاصه \n > اذا كان لديك شكوى على أحد من طاقم الادارة اختار  "شكاوي على "طاقم الادارة\n > ملاحظات  \n \n  يمنع فتح تكت لسبب لا يخص السيرفر \n  يرجى عدم الازعاج بالمنشن او السبام \n  يمنع الاستهبال او فتح تكت بدون سبب \n  يمنع الخمول في التكت \n ** مخالفة أي من القوانين سيعرضك للميوت او التايم **')
 
       
 
@@ -313,7 +291,7 @@ client.on('interactionCreate', async interaction => {
                     .setColor('DARK_BLUE')
                     .setAuthor(interaction.guild.name, interaction.guild.iconURL())
                     .setThumbnail(interaction.guild.iconURL())
-                    .setImage('https://media.discordapp.net/attachments/1213228582126747759/1252071745763016734/image_18.png?ex=6676d0ee&is=66757f6e&hm=8a0ad11893fd51e221d27cce52d203ec965ef0dbbaa775890e155cfbb1316612&=&format=webp&quality=lossless')
+                    .setImage('https://media.discordapp.net/attachments/1255860288775917693/1255905752023830609/New_Project_251_A79F1CB.png?ex=667ed4e0&is=667d8360&hm=ebe4db3ca6f2bff75e5d51ee709fd8e629d9dfda2471c6ed76e29efb44d315f2&=&format=webp&quality=lossless&width=1440&height=525')
                     .setDescription(`مرحباً بك، الرجاء الانتظار لحين حضور القاضي وعدم التزامن بالمنشن. الرجاء ملء النموذج التالي:
 
                      الرجاء الضغط على زر تقديم بلاغ وملء الاستبيان`);
@@ -346,7 +324,7 @@ client.on('interactionCreate', async interaction => {
                     .setColor('DARK_BLUE')
                     .setAuthor(interaction.guild.name, interaction.guild.iconURL())
                     .setThumbnail(interaction.guild.iconURL())
-                    .setImage('https://media.discordapp.net/attachments/1213228582126747759/1252071745763016734/image_18.png?ex=6676d0ee&is=66757f6e&hm=8a0ad11893fd51e221d27cce52d203ec965ef0dbbaa775890e155cfbb1316612&=&format=webp&quality=lossless')
+                    .setImage('https://media.discordapp.net/attachments/1255860288775917693/1255905752023830609/New_Project_251_A79F1CB.png?ex=667ed4e0&is=667d8360&hm=ebe4db3ca6f2bff75e5d51ee709fd8e629d9dfda2471c6ed76e29efb44d315f2&=&format=webp&quality=lossless&width=1440&height=525')
                     .setDescription(`** مرحباً بك , الرجاء إنتظار طاقم الدعم الفني , وعدم الأزعاج بالمنشن **`);
 
                 components = [
@@ -373,7 +351,7 @@ client.on('interactionCreate', async interaction => {
                     .setColor('DARK_BLUE')
                     .setAuthor(interaction.guild.name, interaction.guild.iconURL())
                     .setThumbnail(interaction.guild.iconURL())
-                    .setImage('https://media.discordapp.net/attachments/1213228582126747759/1252071745763016734/image_18.png?ex=6676d0ee&is=66757f6e&hm=8a0ad11893fd51e221d27cce52d203ec965ef0dbbaa775890e155cfbb1316612&=&format=webp&quality=lossless')
+                    .setImage('https://media.discordapp.net/attachments/1255860288775917693/1255905752023830609/New_Project_251_A79F1CB.png?ex=667ed4e0&is=667d8360&hm=ebe4db3ca6f2bff75e5d51ee709fd8e629d9dfda2471c6ed76e29efb44d315f2&=&format=webp&quality=lossless&width=1440&height=525')
                     .setDescription(`مرحباً بك، الرجاء الانتظار لحين حضور القاضي وعدم التزامن بالمنشن. الرجاء ملء النموذج التالي:`);
 
                 components = [
@@ -389,6 +367,10 @@ client.on('interactionCreate', async interaction => {
                         new MessageButton()
                             .setCustomId('escalate_ticket')
                             .setLabel('Manage Ticket')
+                            .setStyle('SECONDARY'),
+                            new MessageButton()
+                            .setCustomId('leomeessi')
+                            .setLabel('تقديم بلاغ')
                             .setStyle('SECONDARY')
                     ),
                 ];
@@ -597,7 +579,7 @@ client.on('interactionCreate', async interaction => {
                 embedMessage = new MessageEmbed()
                     .setColor('DARK_BLUE')
                     .setAuthor(interaction.guild.name, interaction.guild.iconURL())
-                    .setDescription('**:emoji_112: يُرجى منك تحديد نوع الرتب المراد شرائها**');
+                    .setDescription('** يُرجى منك تحديد نوع الرتب المراد شرائها**');
 
                 components = [
                     new MessageActionRow().addComponents(
@@ -679,7 +661,37 @@ client.on('interactionCreate', async interaction => {
               .setColor('DARK_BLUE')
               .setAuthor(interaction.guild.name, interaction.guild.iconURL())
               .setThumbnail(interaction.guild.iconURL())
-              .setDescription('السلام عليكم ورحمة الله ، أسعار الأعلانات كألاتي :\n\nNormal Ads :emoji_439:\n\nMention Here | منشن للأونلاين 💰\nFor : 800k Credits.\n\nMention Everyone  | منشن للجميع 💰\nFor : 1.6m Credits\n\nMention Everyone + Giveways | منشن للجميع + هدية 🌠\nFor : 2.5m\n\nMention Here + Giveways | منشن للأونلاين + هدية 🌠\nFor : 2m\n\nSpical Ads :emoji_439:\n\nMention Everyone + First room for 3d + Giveways | منشن للجميع + اول روم بالسيرفر لمدة ثلاث ايام + هدية :1004369114502008882:\nFor : 4m\n\nMention Everyone + First room for 7d + Giveways | منشن للجميع + اول روم بالسيرفر لمدة اسبوع + هدية :1004369114502008882:\nFor : 7m\n\nومتوفر اعلانات لمسابقات رياكشنات مثل مسابقة صور وغيرها .\n\nالتحويل لـ @ggj. . فقط.')
+              .setDescription(`**
+                السلام عليكم ورحمة الله ، أسعار الأعلانات كألاتي :
+
+Normal Ads 
+
+Mention Here | منشن للأونلاين moneybag
+For : 800k Credits.
+
+Mention Everyone  | منشن للجميع moneybag
+For : 1.6m Credits
+
+Mention Everyone + Giveways | منشن للجميع + هدية stars
+For : 2.5m
+
+Mention Here + Giveways | منشن للأونلاين + هدية stars
+For : 2m
+
+Spical Ads 
+
+Mention Everyone + First room for 3d + Giveways | منشن للجميع + اول روم بالسيرفر لمدة ثلاث ايام + هدية 
+For : 4m
+
+Mention Everyone + First room for 7d + Giveways | منشن للجميع + اول روم بالسيرفر لمدة اسبوع + هدية 
+For : 7m
+
+ومتوفر اعلانات لمسابقات رياكشنات مثل مسابقة صور وغيرها .
+
+التحويل لـ @ggj. . فقط.
+                
+                
+                **`)
               components = [
 
 
@@ -738,7 +750,19 @@ client.on('interactionCreate', async interaction => {
             .setColor('DARK_BLUE')
             .setAuthor(interaction.guild.name, interaction.guild.iconURL())
             .setThumbnail(interaction.guild.iconURL())
-            .setDescription('سعر الرومات الخاصة كالأت :\n\n@unknown-role : منشن هير = 100000\n\nروم خاص بك لمدة اسبوع.\nنشر صور.\nأسم روم بأختيارك\nنشر كل ساعتين\n\nملاحظة : سعر تجديد الروم ( 50k ).')
+            .setDescription(`**
+
+
+                - السلام عليكم ، معلومات الرومات الخاصة :
+
+                - سعر الروم الخاص = 100k
+
+                > منشن هير فقط.
+                > روم خاص بك لمدة اسبوع.
+                > نشر صور.
+                > أسم روم بأختيارك.
+                > ملاحظة : سعر تجديد الروم ( 50k ).
+ `)
 
 
 components = [
@@ -782,7 +806,7 @@ async function post(interaction, roleName,  rolePrice , channelId) {
     const userId = interaction.user.id;
     const member = await interaction.guild.members.fetch(userId);
     const idprobot = '929625111311564800';
-    const idbank = '816515143118356500 ';
+    const idbank = '816515143118356500';
     const tax = Math.floor(rolePrice * (20 / 19) + 1);
 
 
@@ -806,9 +830,12 @@ async function post(interaction, roleName,  rolePrice , channelId) {
     await interaction.update({ embeds: [embedMessage], components });
 
     const filter = (response) => {
+        const expectedContent = `**:moneybag: | ${interaction.user.username}, has transferred \`$${rolePrice}\` to <@!${idbank}> **`;
+        console.log(expectedContent)
         console.log(`Received message: ${response.content}`);
-        return response.content.includes(`:moneybag: | ${interaction.user.username}, has transferred \`$${rolePrice}\` to <@!${idbank}>`) && response.author.id === idprobot;
+        return response.content.includes(expectedContent) && response.author.id === idprobot;
     };
+    
     
     const collector = interaction.channel.createMessageCollector({
         filter,
@@ -897,7 +924,7 @@ async function pos(interaction, roleName, rolePrice, categoryId) {
     const userId = interaction.user.id;
     const member = await interaction.guild.members.fetch(userId);
     const idprobot = '929625111311564800';
-    const idbank = '816515143118356500 ';
+    const idbank = '816515143118356500';
     const tax = Math.floor(rolePrice * (20 / 19) + 1);
 
     // Check if user already has a room
@@ -934,9 +961,11 @@ async function pos(interaction, roleName, rolePrice, categoryId) {
     await interaction.update({ embeds: [embedMessage], components });
 
     const filter = (response) => {
+        const expectedContent = `**:moneybag: | ${interaction.user.username}, has transferred \`$${rolePrice}\` to <@!${idbank}> **`;
         console.log(`Received message: ${response.content}`);
-        return response.content.includes(`:moneybag: | ${interaction.user.username}, has transferred \`$${rolePrice}\` to <@!${idbank}>`) && response.author.id === idprobot;
+        return response.content.includes(expectedContent) && response.author.id === idprobot;
     };
+    
     
     const collector = interaction.channel.createMessageCollector({
         filter,
@@ -1124,9 +1153,11 @@ async function ads(interaction, roleName, rolePrice, categoryId, deleteTime) {
     await interaction.update({ embeds: [embedMessage], components });
 
     const filter = (response) => {
+        const expectedContent = `**:moneybag: | ${interaction.user.username}, has transferred \`$${rolePrice}\` to <@!${idbank}> **`;
         console.log(`Received message: ${response.content}`);
-        return response.content.includes(`:moneybag: | ${interaction.user.username}, has transferred \`$${rolePrice}\` to <@!${idbank}>`) && response.author.id === idprobot;
+        return response.content.includes(expectedContent) && response.author.id === idprobot;
     };
+    
     
     const collector = interaction.channel.createMessageCollector({
         filter,
@@ -1524,7 +1555,7 @@ client.on('interactionCreate', async interaction => {
 });
 
 async function informUser(interaction, rolesFound, totalPrice) {
-    const idbank = '816515143118356500 ';
+    const idbank = '816515143118356500';
     const idprobot = '929625111311564800';
 
     const tax = Math.floor(totalPrice * (20 / 19) + 1);
@@ -1557,7 +1588,7 @@ client.on('interactionCreate', async interaction => {
         const userId = interaction.user.id;
         const member = await interaction.guild.members.fetch(userId);
         const idprobot = '929625111311564800';
-        const idbank = '816515143118356500 ';
+        const idbank = '816515143118356500';
         const tax = Math.floor(totalPrice * (20 / 19) + 1);
 
         let embedMessage = new MessageEmbed()
@@ -1571,9 +1602,11 @@ client.on('interactionCreate', async interaction => {
         await interaction.update({ embeds: [embedMessage], components: [] });
 
         const filter = (response) => {
+            const expectedContent = `**:moneybag: | ${interaction.user.username}, has transferred \`$${totalPrice}\` to <@!${idbank}> **`;
             console.log(`Received message: ${response.content}`);
-            return response.content.includes(`:moneybag: | ${interaction.user.username}, has transferred \`$${rolePrice}\` to <@!${idbank}>`) && response.author.id === idprobot;
+            return response.content.includes(expectedContent) && response.author.id === idprobot;
         };
+        
         
         const collector = interaction.channel.createMessageCollector({ filter, time: 30000 });
 
@@ -1949,7 +1982,7 @@ async function handleRoleSelection(interaction, roleName, roleId, rolePrice) {
     const userId = interaction.user.id;
     const member = await interaction.guild.members.fetch(userId);
     const idprobot = '929625111311564800';
-    const idbank = '816515143118356500 ';
+    const idbank = '816515143118356500';
     const tax = Math.floor(rolePrice * (20 / 19) + 1);
 
     if (member.roles.cache.has(roleId)) {
@@ -1978,9 +2011,11 @@ async function handleRoleSelection(interaction, roleName, roleId, rolePrice) {
     await interaction.update({ embeds: [embedMessage], components });
 
     const filter = (response) => {
+        const expectedContent = `**:moneybag: | ${interaction.user.username}, has transferred \`$${rolePrice}\` to <@!${idbank}> **`;
         console.log(`Received message: ${response.content}`);
-        return response.content.includes(`:moneybag: | ${interaction.user.username}, has transferred \`$${rolePrice}\` to <@!${idbank}>`) && response.author.id === idprobot;
+        return response.content.includes(expectedContent) && response.author.id === idprobot;
     };
+    
     
     const collector = interaction.channel.createMessageCollector({
         filter,
@@ -2128,7 +2163,7 @@ client.on('interactionCreate', async interaction => {
         const [, roleName, rolePrice] = interaction.customId.split(':');
         const price = parseInt(rolePrice, 10); 
         const tax = Math.floor(price * (20 / 19) + 1);
-        await interaction.reply({ content: `**#credit 816515143118356500  ${tax} **`, ephemeral: true });
+        await interaction.reply({ content: `#credit 816515143118356500  ${tax} `, ephemeral: true });
     }
 });
 
