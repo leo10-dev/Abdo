@@ -891,7 +891,7 @@ async function post(interaction, roleName,  rolePrice , channelId) {
 		
 		const secondActionRow = new MessageActionRow().addComponents(here1);
 
-		modal.addComponents(secondActionRow);
+		modal1.addComponents(secondActionRow);
 		
 		await interaction.showModal(modal1);
         }
@@ -912,7 +912,7 @@ async function post(interaction, roleName,  rolePrice , channelId) {
             embedMessage.setDescription(` تم نشر المنشور بنجاح في ${channel} `)
               await interaction.update({ embeds: [embedMessage], components: [] });  
 	    
-        channel.send({content : `@${roleName} ${here}`})
+        channel.send({content : ` ${here} \n @${roleName} \n \n تواصل مع ${interaction.user} للشراء `})
 
         }
     });
@@ -928,11 +928,7 @@ async function pos(interaction, roleName, rolePrice, categoryId) {
     const tax = Math.floor(rolePrice * (20 / 19) + 1);
 
     // Check if user already has a room
-    const userChannels = interaction.guild.channels.cache.filter(channel => channel.type === 'GUILD_TEXT' && channel.permissionOverwrites.has(userId));
-    if (userChannels.size > 0) {
-        await interaction.reply({ content: 'لديك بالفعل روم خاص. لا يمكنك شراء روم إضافي.', ephemeral: true });
-        return;
-    }
+
 
     // Limit total number of rooms
     const totalRooms = interaction.guild.channels.cache.filter(channel => channel.type === 'GUILD_TEXT' && channel.parentId === categoryId).size;
