@@ -14,7 +14,8 @@ const discordTranscripts = require('discord-html-transcripts');
 
 
 
-const channelIds = ['1255391110415515678', '1255391112718323790', '1255391116740792420' , '1255391119361970278' , '1255391120859332649' , '1255391123476844544' , '1255391124961493024' , '1255391126257668207' , '1255391127754903666'];
+
+const channelIds = ['1258273831588597840', '1258273833341681705', '1258273837640843346' , '1258273840447094824' , '1258273841738813534' , '1258273843605143563' , '1258273845370945569' , '1258273847510306856' , '1258273848520871989'];
 
 client.once('ready', () => {
     console.log('Bot is ready.');
@@ -313,6 +314,10 @@ client.on('interactionCreate', async interaction => {
                             new MessageButton()
                             .setCustomId('leomeessi')
                             .setLabel('تقديم بلاغ')
+                            .setStyle('SECONDARY'),
+                            new MessageButton()
+                            .setCustomId('leomes1')
+                            .setLabel('رفع بلاغ')
                             .setStyle('SECONDARY')
                     ),
                 ];
@@ -371,7 +376,12 @@ client.on('interactionCreate', async interaction => {
                             new MessageButton()
                             .setCustomId('leomeessi')
                             .setLabel('تقديم بلاغ')
+                            .setStyle('SECONDARY'),
+                            new MessageButton()
+                            .setCustomId('leomes1')
+                            .setLabel('رفع بلاغ')
                             .setStyle('SECONDARY')
+
                     ),
                 ];
                 break;
@@ -449,6 +459,119 @@ client.on('interactionCreate', async interaction => {
         });
     }
 });
+
+
+
+
+
+client.on('interactionCreate', async interaction => {
+    if (interaction.isButton()) {
+        if (interaction.customId === 'leomes1') {
+            const modal = new Modal()
+                .setCustomId('get_modal')
+                .setTitle('رفع بلاغ');
+
+            const reporter_id = new TextInputComponent()
+                .setCustomId('report_id')
+                .setLabel("ايدي صاحب البلاغ")
+                .setStyle('SHORT'); // Use 'SHORT' for short inputs
+
+            const scamer_id = new TextInputComponent()
+                .setCustomId('scamer_id')
+                .setLabel("ايدي النصاب")
+                .setStyle('SHORT'); // Use 'SHORT' for short inputs
+
+            const the_story = new TextInputComponent()
+                .setCustomId('the_story')
+                .setLabel("القصه")
+                .setStyle('PARAGRAPH'); // Use 'PARAGRAPH' for longer text inputs
+
+            const price = new TextInputComponent()
+                .setCustomId('price_get')
+                .setLabel("المبلغ")
+                .setStyle('SHORT'); // Use 'SHORT' for short inputs
+
+            const Evidence = new TextInputComponent()
+                .setCustomId('evidence')
+                .setLabel("الدلائل (روابط الصور فقط)")
+                .setStyle('PARAGRAPH'); // Use 'PARAGRAPH' for longer text inputs
+
+            const firstActionRow = new MessageActionRow().addComponents(reporter_id);
+            const secondActionRow = new MessageActionRow().addComponents(scamer_id);
+            const thirdActionRow = new MessageActionRow().addComponents(the_story);
+            const fourthActionRow = new MessageActionRow().addComponents(price);
+            const fifthActionRow = new MessageActionRow().addComponents(Evidence);
+
+            modal.addComponents(firstActionRow, secondActionRow, thirdActionRow, fourthActionRow, fifthActionRow);
+
+          interaction.showModal(modal);
+        }
+    }
+});
+client.on('interactionCreate', async interaction => {
+  if (!interaction.isModalSubmit()) return;
+  interaction.reply('تم')
+  if (interaction.customId === 'get_modal') {
+    const reporter_id = interaction.fields.getTextInputValue('report_id');
+    const scamer_id = interaction.fields.getTextInputValue('scamer_id');
+    const the_story = interaction.fields.getTextInputValue('the_story');
+    const price = interaction.fields.getTextInputValue('price_get');
+    const Evidence = interaction.fields.getTextInputValue('evidence');
+    const channel = client.channels.cache.get("1247859747479359488");
+    const embed = new MessageEmbed()
+      .setTitle("تم رفع بلاغ جديد")
+      .addFields(
+        {
+          name: "القاضي",
+          value: `${interaction.user}`
+        },
+        {
+          name: "العضو المنصوب عليه",
+          value: `<@${reporter_id}>\n(${reporter_id})`
+        },
+        {
+          name: "النصاب",
+          value: `<@${scamer_id}>\n(${scamer_id})`
+        },
+        {
+          name: "القصه",
+          value: `${the_story}`
+        },
+        {
+          name: "المبلغ",
+          value: `${price}`
+        },
+        {
+          name: "الدلائل",
+          value: `⬇️⬇️`
+        }
+      )
+      .setColor('#000100')
+      .setTimestamp();
+    channel.send({ embeds: [embed] });
+    await channel.send({ files: [Evidence] });
+    await interaction.reply({
+      content: `تم رفع البلاغ بنجاح`,
+      ephemeral: true,
+    })
+  }
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
