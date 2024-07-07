@@ -38,45 +38,49 @@ client.once('ready', () => {
             return { hour: astHour, minute: astMinute };
         };
 
-        channelIds.forEach(async (channelId) => {
+        const currentAstTime = utcToAst(currentHour, currentMinute);
+        const openAstTime = { hour: 17, minute: 5 }; // 4:55 PM in 24-hour format
+        const closeAstTime = { hour: 17, minute: 4 }; // 3:54 PM in 24-hour format
+
+        const isOpenTime = currentAstTime.hour === openAstTime.hour && currentAstTime.minute === openAstTime.minute;
+        const isCloseTime = currentAstTime.hour === closeAstTime.hour && currentAstTime.minute === closeAstTime.minute;
+
+        const notificationChannel = client.channels.cache.get('1243118161017180212');
+
+        let openMessages = [];
+        let closeMessages = [];
+
+        for (const channelId of channelIds) {
             try {
                 const channel = await client.channels.fetch(channelId);
-                const llll = await client.channels.fetch('1243118161017180212');
 
                 if (!channel) {
                     console.error(`Channel with ID ${channelId} not found.`);
-                    return;
+                    continue;
                 }
-
-                const currentAstTime = utcToAst(currentHour, currentMinute);
-                const openAstTime = { hour: 9, minute: 0 }; // Adjust these times as needed
-                const closeAstTime = { hour: 3, minute: 0 }; // Adjust these times as needed
-
-                const isOpenTime =
-                    currentAstTime.hour === openAstTime.hour && currentAstTime.minute === openAstTime.minute;
-                const isCloseTime =
-                    currentAstTime.hour === closeAstTime.hour && currentAstTime.minute === closeAstTime.minute;
 
                 if (isOpenTime) {
                     await channel.permissionOverwrites.edit(channel.guild.roles.everyone, {
                         VIEW_CHANNEL: true,
                     });
-
-                    console.log(`Channel ${channel.name} (${channelId}) shown.`);
-                    llll.send(`** > - تـم أرجـاع رومـات الـبـيـ$ـع ، الـنـشـر مـفـتـوح .**`);
+                    openMessages.push(channel.name);
                 } else if (isCloseTime) {
                     await channel.permissionOverwrites.edit(channel.guild.roles.everyone, {
                         VIEW_CHANNEL: false,
                     });
-
-                    console.log(`Channel ${channel.name} (${channelId}) hidden.`);
-                    llll.send(`** > - تـم أخـفـاء رومـات الـبـيـ$ـع ، الـنـشـر مـقـفـول .**`);
+                    closeMessages.push(channel.name);
                 }
             } catch (error) {
                 console.error(`Error processing channel ${channelId}:`, error.message);
             }
-        });
-    }, 60000); 
+        }
+
+        if (isOpenTime && openMessages.length > 0) {
+            notificationChannel.send(`** > - تـم أرجـاع رومـات الـبـيـ$ـع ، الـنـشـر مـفـتـوح  @here.**`);
+        } else if (isCloseTime && closeMessages.length > 0) {
+            notificationChannel.send(`** > - تـم أخـفـاء رومـات الـبـيـ$ـع ، الـنـشـر مـقـفـول  @here.**`);
+        }
+    }, 60000); // Check every minute
 });
 
 
