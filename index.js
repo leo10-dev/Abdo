@@ -154,7 +154,7 @@ client.on('interactionCreate', async interaction => {
                     value: 'support2',
                 },
                 {
-                    label: 'طلب وسيط ',
+                    label: 'شكوى على احد طاقم الادارة',
                 
                     value: 'support3',
                 },
@@ -327,8 +327,8 @@ client.on('interactionCreate', async interaction => {
                 ];
                 break;
 
-            case 'support3':
-                channelName = `طلبات-${interaction.user.displayName}`;
+            case 'support4':
+                channelName = `طلب-${interaction.user.displayName}`;
                 embedMessage = new MessageEmbed()
                     .setColor('DARK_BLUE')
                     .setAuthor(interaction.guild.name, interaction.guild.iconURL())
@@ -354,7 +354,7 @@ client.on('interactionCreate', async interaction => {
                 ];
                 break;
 
-            case 'support4':
+            case 'support3':
                 channelName = `شكوى-${interaction.user.displayName}`;
                 embedMessage = new MessageEmbed()
                     .setColor('DARK_BLUE')
@@ -470,7 +470,11 @@ client.on('interactionCreate', async interaction => {
 
 client.on('interactionCreate', async interaction => {
     if (interaction.isButton()) {
-        if (interaction.customId === 'leomes1') {
+
+        let user = interaction.user.id
+        if(!user.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) return interaction.reply({ content: 'You do not have the required permissions to use this button.', ephemeral: true });
+        if (interaction.customId === 'leomes1' ) {
+     
             const modal = new Modal()
                 .setCustomId('get_modal')
                 .setTitle('رفع بلاغ');
@@ -511,6 +515,7 @@ client.on('interactionCreate', async interaction => {
           interaction.showModal(modal);
         }
     }
+
 });
 client.on('interactionCreate', async interaction => {
   if (!interaction.isModalSubmit()) return;
@@ -644,22 +649,19 @@ client.on('interactionCreate', async interaction => {
 
 
 
-
-
-
-client.on('interactionCreate', async interaction => {
-
+client.on('interactionCreate', async (interaction) => {
     if (!interaction.isButton()) return;
-    if(interaction.customId === 'claim_ticket') {
 
-
-
-
+    if (interaction.customId === 'claim_ticket') {
+      
         const userId = interaction.user.id;
         const user = interaction.guild.members.cache.get(userId); 
-         const requiredRole = '1243117940581208074'
+     
         
-         if (!user.roles.cache.has(requiredRole)) {
+           if (
+            !user.permissions.has('ADMINISTRATOR') &&
+            !user.roles.cache.has('1243117940581208074') 
+        ) {
             await interaction.reply({ content: 'هنهزر يسطا ؟؟', ephemeral: true });
             return;
         }
@@ -668,20 +670,124 @@ client.on('interactionCreate', async interaction => {
         db.set(`points_${userId}`, userPoints);
 
         const embed = new MessageEmbed()
-        .setDescription(`**تم استلام تذكرة ${interaction.channel} من قبل الاداري ${interaction.user}**`)
-                .setAuthor(interaction.guild.name, interaction.guild.iconURL())
-                .setThumbnail(interaction.guild.iconURL())
-        .setColor('DARK_BLUE')
- 
+            .setDescription(`**تم استلام تذكرة ${interaction.channel} من قبل الاداري ${interaction.user}**`)
+            .setAuthor(interaction.guild.name, interaction.guild.iconURL())
+            .setThumbnail(interaction.guild.iconURL())
+            .setColor('DARK_BLUE');
 
-        await interaction.reply({embeds : [embed]});
+        const originalMessage = await interaction.channel.messages.fetch(interaction.message.id);
 
+        // Create a new action row array to hold the updated components
+        const updatedComponents = [];
 
+        // Loop through the original message components and update the button
+        originalMessage.components.forEach(actionRow => {
+            const updatedActionRow = new MessageActionRow();
+            actionRow.components.forEach(component => {
+                if (component.customId === 'claim_ticket') {
+                    updatedActionRow.addComponents(
+                        new MessageButton()
+                            .setCustomId('unClaim_ticket')
+                            .setLabel('UnClaim')
+                            .setStyle('SECONDARY')
+                    );
+                } else {
+                    updatedActionRow.addComponents(component);
+                }
+            });
+            updatedComponents.push(updatedActionRow);
+        });
+
+        await originalMessage.edit({ components: updatedComponents });
+        await interaction.reply({ embeds: [embed] });
+
+        // Update permissions for the three roles
+        interaction.channel.permissionOverwrites.edit(interaction.user.id, {
+            SEND_MESSAGES: true,
+            VIEW_CHANNEL: true,
+            READ_MESSAGE_HISTORY: true,
+          });
+
+          const roleid = '1243117940581208074'
+            await interaction.channel.permissionOverwrites.edit(roleid, {
+                SEND_MESSAGES: false,
+                VIEW_CHANNEL: true,
+                READ_MESSAGE_HISTORY: false,
+            });
 
     }
+});
 
 
-})
+
+client.on('interactionCreate', async (interaction) => {
+    if (!interaction.isButton()) return;
+
+    if (interaction.customId === 'unClaim_ticket') {  
+          const userId = interaction.user.id;
+        const user = interaction.guild.members.cache.get(userId); 
+       
+               let userPoints = db.get(`points_${userId}`) || 0;
+        userPoints = Math.max(0, userPoints - 1); // Ensure points don't go below 0
+        db.set(`points_${userId}`, userPoints);
+        if (
+            !user.permissions.has('ADMINISTRATOR') &&
+            !user.roles.cache.has('1243117940581208074') 
+            
+           ) {
+                await interaction.reply({ content: 'هنهزر يسطا ؟؟', ephemeral: true });
+                return;
+            }
+
+        const embed = new MessageEmbed()
+            .setColor('BLUE')
+            .setDescription(
+                `** تم الغاء استلام التذكره ${interaction.channel} من قبل الاداري ${interaction.user}**`
+            )
+            .setAuthor(interaction.guild.name, interaction.guild.iconURL())
+            .setThumbnail(interaction.guild.iconURL());
+
+        await interaction.reply({ embeds: [embed] });
+
+        // Update permissions for the specified roles
+       const roleId = '1243117940581208074'
+
+            await interaction.channel.permissionOverwrites.edit(roleId, {
+                SEND_MESSAGES: true,
+                VIEW_CHANNEL: true,
+                READ_MESSAGE_HISTORY: true,
+            });
+       
+
+        // Fetch the original message to update the button
+        const originalMessage = await interaction.channel.messages.fetch(interaction.message.id);
+
+        // Create a new action row array to hold the updated components
+        const updatedComponents = [];
+
+        // Loop through the original message components and update the button
+        originalMessage.components.forEach(actionRow => {
+            const updatedActionRow = new MessageActionRow();
+            actionRow.components.forEach(component => {
+                if (component.customId === 'unClaim_ticket') {
+                    updatedActionRow.addComponents(
+                        new MessageButton()
+                            .setCustomId('claim_ticket')
+                            .setLabel('Claim')
+                            .setStyle('SECONDARY')
+                    );
+                } else {
+                    updatedActionRow.addComponents(component);
+                }
+            });
+            updatedComponents.push(updatedActionRow);
+        });
+
+        // Edit the original message with the updated components
+        await originalMessage.edit({ components: updatedComponents });
+    }
+});
+
 
 
 
@@ -932,8 +1038,8 @@ await  interaction.reply({embeds : [embedMessage] , components })
 async function post(interaction, roleName,  rolePrice , channelId) {
     const userId = interaction.user.id;
     const member = await interaction.guild.members.fetch(userId);
-    const idprobot = '929625111311564800';
-    const idbank = '816515143118356500';
+    const idprobot = '282859044593598464';
+    const idbank = '950098048443371521';
     const tax = Math.floor(rolePrice * (20 / 19) + 1);
 
 
@@ -1050,8 +1156,8 @@ async function post(interaction, roleName,  rolePrice , channelId) {
 async function pos(interaction, roleName, rolePrice, categoryId) {
     const userId = interaction.user.id;
     const member = await interaction.guild.members.fetch(userId);
-    const idprobot = '929625111311564800';
-    const idbank = '816515143118356500';
+    const idprobot = '282859044593598464';
+    const idbank = '950098048443371521';
     const tax = Math.floor(rolePrice * (20 / 19) + 1);
 
     // Check if user already has a room
@@ -1250,8 +1356,8 @@ async function pos(interaction, roleName, rolePrice, categoryId) {
 async function ads(interaction, roleName, rolePrice, categoryId, deleteTime) {
     const userId = interaction.user.id;
     const member = await interaction.guild.members.fetch(userId);
-    const idprobot = '929625111311564800';
-    const idbank = '816515143118356500';
+    const idprobot = '282859044593598464';
+    const idbank = '950098048443371521';
     const tax = Math.floor(rolePrice * (20 / 19) + 1);
 
     if (deleteTime < 1) deleteTime = 300; 
@@ -1678,8 +1784,8 @@ client.on('interactionCreate', async interaction => {
 });
 
 async function informUser(interaction, rolesFound, totalPrice) {
-    const idbank = '816515143118356500';
-    const idprobot = '929625111311564800';
+    const idbank = '950098048443371521';
+    const idprobot = '282859044593598464';
 
     const tax = Math.floor(totalPrice * (20 / 19) + 1);
 
@@ -1710,8 +1816,8 @@ client.on('interactionCreate', async interaction => {
         const [, roleIds, totalPrice] = interaction.customId.split(':');
         const userId = interaction.user.id;
         const member = await interaction.guild.members.fetch(userId);
-        const idprobot = '929625111311564800';
-        const idbank = '816515143118356500';
+        const idprobot = '282859044593598464';
+        const idbank = '950098048443371521';
         const tax = Math.floor(totalPrice * (20 / 19) + 1);
 
         let embedMessage = new MessageEmbed()
@@ -2104,8 +2210,8 @@ client.on('interactionCreate', async interaction => {
 async function handleRoleSelection(interaction, roleName, roleId, rolePrice) {
     const userId = interaction.user.id;
     const member = await interaction.guild.members.fetch(userId);
-    const idprobot = '929625111311564800';
-    const idbank = '816515143118356500';
+    const idprobot = '282859044593598464';
+    const idbank = '950098048443371521';
     const tax = Math.floor(rolePrice * (20 / 19) + 1);
 
     if (member.roles.cache.has(roleId)) {
@@ -2286,7 +2392,7 @@ client.on('interactionCreate', async interaction => {
         const [, roleName, rolePrice] = interaction.customId.split(':');
         const price = parseInt(rolePrice, 10); 
         const tax = Math.floor(price * (20 / 19) + 1);
-        await interaction.reply({ content: `#credit 816515143118356500  ${tax} `, ephemeral: true });
+        await interaction.reply({ content: `#credit 950098048443371521  ${tax} `, ephemeral: true });
     }
 });
 
@@ -2297,6 +2403,7 @@ client.on('interactionCreate', async interaction => {
 
 client.on('interactionCreate', async interaction => {
     if (interaction.isButton() && interaction.customId.startsWith('escalate_ticket')) {
+
         const selectMenu = new MessageSelectMenu()
             .setCustomId('ticket_action')
             .setPlaceholder('Select an action')
@@ -2494,6 +2601,9 @@ client.on('interactionCreate', async interaction => {
 
 
 
+
+
+
 //nodejs-events
 process.on("unhandledRejection", e => {
     console.log(e)
@@ -2510,4 +2620,3 @@ process.on("uncaughtExceptionMonitor", e => {
 
 
 client.login(token);
-
