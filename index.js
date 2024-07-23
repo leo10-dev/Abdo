@@ -1170,10 +1170,7 @@ async function post(interaction, roleName,  rolePrice , channelId) {
             embedMessage.setDescription(` تم نشر المنشور بنجاح في ${channel} `)
               await interaction.update({ embeds: [embedMessage], components: [] });  
 	    
-channel.send({
-    content: `${here} \n \n تواصل مع ${interaction.user} \n @${roleName}`,
-    files: [attachment]
-});	
+channel.send({ content: `${here} \n \n تواصل مع ${interaction.user} \n @${roleName}`});	
 
         }
     });
