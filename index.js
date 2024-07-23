@@ -532,7 +532,7 @@ client.on('interactionCreate', async interaction => {
     if (interaction.customId === 'get_modal') {
         const member = await interaction.guild.members.fetch(interaction.user.id);
 
-        const requiredRole = interaction.guild.roles.cache.get('1248437375340908647');
+        const requiredRole = interaction.guild.roles.cache.get('1265276901119889470');
         if (!member || !requiredRole) {
             await interaction.reply({ content: 'Error fetching member or role. Please try again.', ephemeral: true });
             return;
@@ -588,7 +588,7 @@ client.on('interactionCreate', async interaction => {
 
     if (interaction.customId === 'ok') {
         const member = await interaction.guild.members.fetch(interaction.user.id);
-        const requiredRole = interaction.guild.roles.cache.get('1248437375340908647');
+        const requiredRole = interaction.guild.roles.cache.get('1265276901119889470');
 
         if (!member || !requiredRole) {
             await interaction.reply({ content: 'Error fetching member or role. Please try again.', ephemeral: true });
