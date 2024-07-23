@@ -1164,7 +1164,7 @@ async function post(interaction, roleName,  rolePrice , channelId) {
             const here = interaction.fields.getTextInputValue('here1');
 
         const channel = await client.channels.fetch(channelId);
-	    const attachment = new MessageAttachment('line.png');
+	    const attachment = new MessageAttachment('./line.png');
 
           
             embedMessage.setDescription(` تم نشر المنشور بنجاح في ${channel} `)
