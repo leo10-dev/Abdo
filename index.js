@@ -1164,12 +1164,14 @@ async function post(interaction, roleName,  rolePrice , channelId) {
             const here = interaction.fields.getTextInputValue('here1');
 
         const channel = await client.channels.fetch(channelId);
+	    const attachment = new MessageAttachment('line.png');
 
           
             embedMessage.setDescription(` تم نشر المنشور بنجاح في ${channel} `)
               await interaction.update({ embeds: [embedMessage], components: [] });  
 	    
-        channel.send({content : ` ${here} \n @${roleName} \n \n تواصل مع ${interaction.user} للشراء `})
+        channel.send({content : `${here} \n \n تواصل مع ${interaction.user} \n @${roleName} ` , files : [attachment]})
+	
 
         }
     });
