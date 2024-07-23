@@ -15,6 +15,7 @@ const discordTranscripts = require('discord-html-transcripts');
 
 
 
+
 const channelIds = ['1258273831588597840', '1258273833341681705', '1258273837640843346' , '1258273840447094824' , '1258273841738813534' , '1258273843605143563' , '1258273845370945569' , '1258273847510306856' , '1258273848520871989'];
 
 client.once('ready', () => {
@@ -361,7 +362,7 @@ client.on('interactionCreate', async interaction => {
                     .setAuthor(interaction.guild.name, interaction.guild.iconURL())
                     .setThumbnail(interaction.guild.iconURL())
                     .setImage('https://media.discordapp.net/attachments/1255860288775917693/1255905752023830609/New_Project_251_A79F1CB.png?ex=667ed4e0&is=667d8360&hm=ebe4db3ca6f2bff75e5d51ee709fd8e629d9dfda2471c6ed76e29efb44d315f2&=&format=webp&quality=lossless&width=1440&height=525')
-                    .setDescription(`مرحباً بك، الرجاء الانتظار لحين حضور القاضي وعدم التزامن بالمنشن. الرجاء ملء النموذج التالي:`);
+                    .setDescription(`الرجاء عدم الإزعاج وكتابة القصة وانتظار احد العليا`);
 
                 components = [
                     new MessageActionRow().addComponents(
@@ -377,20 +378,14 @@ client.on('interactionCreate', async interaction => {
                             .setCustomId('escalate_ticket')
                             .setLabel('Manage Ticket')
                             .setStyle('SECONDARY'),
-                            new MessageButton()
-                            .setCustomId('leomeessi')
-                            .setLabel('تقديم بلاغ')
-                            .setStyle('SECONDARY'),
-                            new MessageButton()
-                            .setCustomId('leomes1')
-                            .setLabel('رفع بلاغ')
-                            .setStyle('SECONDARY')
+                     
 
                     ),
                 ];
                 break;
 
             default:
+
                 embedMessage = new MessageEmbed()
                 .setColor('DARK_BLUE')
                 .setAuthor(interaction.guild.name, interaction.guild.iconURL())
@@ -471,124 +466,167 @@ client.on('interactionCreate', async interaction => {
 client.on('interactionCreate', async interaction => {
     if (interaction.isButton()) {
 
-        let user = interaction.user.id
-        if(!user.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) return interaction.reply({ content: 'You do not have the required permissions to use this button.', ephemeral: true });
-        if (interaction.customId === 'leomes1' ) {
-     
-            const modal = new Modal()
-                .setCustomId('get_modal')
-                .setTitle('رفع بلاغ');
+        try {
 
-            const reporter_id = new TextInputComponent()
-                .setCustomId('report_id')
-                .setLabel("ايدي صاحب البلاغ")
-                .setStyle('SHORT'); // Use 'SHORT' for short inputs
+            if (interaction.customId === 'leomes1') {
+                const member = await interaction.guild.members.fetch(interaction.user.id);
+                const requiredRole = interaction.guild.roles.cache.get('1243117940581208074');
+    
+                if (!member || !requiredRole) {
+                    await interaction.reply({ content: 'Error fetching member or role. Please try again.', ephemeral: true });
+                    return;
+                }
+    
+                if (!member.roles.cache.has(requiredRole.id) && !member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+                    await interaction.reply({ content: 'You do not have the required permissions to use this button.', ephemeral: true });
+                    return;
+                }
+                const modal = new Modal()
+                    .setCustomId('get_modal')
+                    .setTitle('رفع بلاغ');
 
-            const scamer_id = new TextInputComponent()
-                .setCustomId('scamer_id')
-                .setLabel("ايدي النصاب")
-                .setStyle('SHORT'); // Use 'SHORT' for short inputs
+                const reporter_id = new TextInputComponent()
+                    .setCustomId('report_id')
+                    .setLabel("ايدي صاحب البلاغ")
+                    .setStyle('SHORT');
 
-            const the_story = new TextInputComponent()
-                .setCustomId('the_story')
-                .setLabel("القصه")
-                .setStyle('PARAGRAPH'); // Use 'PARAGRAPH' for longer text inputs
+                const scamer_id = new TextInputComponent()
+                    .setCustomId('scamer_id')
+                    .setLabel("ايدي النصاب")
+                    .setStyle('SHORT');
 
-            const price = new TextInputComponent()
-                .setCustomId('price_get')
-                .setLabel("المبلغ")
-                .setStyle('SHORT'); // Use 'SHORT' for short inputs
+                const the_story = new TextInputComponent()
+                    .setCustomId('the_story')
+                    .setLabel("القصه")
+                    .setStyle('PARAGRAPH');
 
-            const Evidence = new TextInputComponent()
-                .setCustomId('evidence')
-                .setLabel("الدلائل (روابط الصور فقط)")
-                .setStyle('PARAGRAPH'); // Use 'PARAGRAPH' for longer text inputs
+                const price = new TextInputComponent()
+                    .setCustomId('price_get')
+                    .setLabel("المبلغ")
+                    .setStyle('SHORT');
 
-            const firstActionRow = new MessageActionRow().addComponents(reporter_id);
-            const secondActionRow = new MessageActionRow().addComponents(scamer_id);
-            const thirdActionRow = new MessageActionRow().addComponents(the_story);
-            const fourthActionRow = new MessageActionRow().addComponents(price);
-            const fifthActionRow = new MessageActionRow().addComponents(Evidence);
+                const Evidence = new TextInputComponent()
+                    .setCustomId('evidence')
+                    .setLabel("الدلائل (روابط الصور فقط)")
+                    .setStyle('PARAGRAPH');
 
-            modal.addComponents(firstActionRow, secondActionRow, thirdActionRow, fourthActionRow, fifthActionRow);
+                const firstActionRow = new MessageActionRow().addComponents(reporter_id);
+                const secondActionRow = new MessageActionRow().addComponents(scamer_id);
+                const thirdActionRow = new MessageActionRow().addComponents(the_story);
+                const fourthActionRow = new MessageActionRow().addComponents(price);
+                const fifthActionRow = new MessageActionRow().addComponents(Evidence);
 
-          interaction.showModal(modal);
+                modal.addComponents(firstActionRow, secondActionRow, thirdActionRow, fourthActionRow, fifthActionRow);
+
+                await interaction.showModal(modal);
+            }
+        } catch (error) {
+            console.error(error);
+            await interaction.reply({ content: 'An error occurred while processing your request.', ephemeral: true });
         }
     }
-
 });
 client.on('interactionCreate', async interaction => {
-  if (!interaction.isModalSubmit()) return;
-  interaction.reply('تم')
-  if (interaction.customId === 'get_modal') {
-    const reporter_id = interaction.fields.getTextInputValue('report_id');
-    const scamer_id = interaction.fields.getTextInputValue('scamer_id');
-    const the_story = interaction.fields.getTextInputValue('the_story');
-    const price = interaction.fields.getTextInputValue('price_get');
-    const Evidence = interaction.fields.getTextInputValue('evidence');
-    const channel = client.channels.cache.get("1247859747479359488");
-    const embed = new MessageEmbed()
-      .setTitle("تم رفع بلاغ جديد")
-      .addFields(
-        {
-          name: "القاضي",
-          value: `${interaction.user}`
-        },
-        {
-          name: "العضو المنصوب عليه",
-          value: `<@${reporter_id}>\n(${reporter_id})`
-        },
-        {
-          name: "النصاب",
-          value: `<@${scamer_id}>\n(${scamer_id})`
-        },
-        {
-          name: "القصه",
-          value: `${the_story}`
-        },
-        {
-          name: "المبلغ",
-          value: `${price}`
-        },
-        {
-          name: "الدلائل",
-          value: `⬇️⬇️`
+    if (!interaction.isModalSubmit()) return;
+
+    if (interaction.customId === 'get_modal') {
+        const member = await interaction.guild.members.fetch(interaction.user.id);
+
+        const requiredRole = interaction.guild.roles.cache.get('1248437375340908647');
+        if (!member || !requiredRole) {
+            await interaction.reply({ content: 'Error fetching member or role. Please try again.', ephemeral: true });
+            return;
         }
-      )
-      .setColor('#000100')
-      .setTimestamp();
-    channel.send({ embeds: [embed] });
-    await channel.send({ files: [Evidence] });
-    await interaction.reply({
-      content: `تم رفع البلاغ بنجاح`,
-      ephemeral: true,
-    })
-  }
-})
 
+        if (!member.roles.cache.has(requiredRole.id) && !member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+            await interaction.reply({ content: 'You do not have the required permissions to use this button.', ephemeral: true });
+            return;
+        }
 
+        const reporter_id = interaction.fields.getTextInputValue('report_id');
+        const scamer_id = interaction.fields.getTextInputValue('scamer_id');
+        const the_story = interaction.fields.getTextInputValue('the_story');
+        const price = interaction.fields.getTextInputValue('price_get');
+        const Evidence = interaction.fields.getTextInputValue('evidence');
 
+        const embed = new MessageEmbed()
+            .setTitle("تم رفع بلاغ جديد")
+            .addFields(
+                { name: "القاضي", value: `${interaction.user}` },
+                { name: "العضو المنصوب عليه", value: `<@${reporter_id}>\n(${reporter_id})` },
+                { name: "النصاب", value: `<@${scamer_id}>\n(${scamer_id})` },
+                { name: "القصه", value: `${the_story}` },
+                { name: "المبلغ", value: `${price}` },
+                { name: "الدلائل", value: `⬇️⬇️` }
+            )
+            .setColor('#000100')
+            .setTimestamp();
 
+        const row = new MessageActionRow()
+            .addComponents(
+                new MessageButton()
+                    .setCustomId('ok')
+                    .setLabel('قبول')
+                    .setStyle('SUCCESS'),
+                new MessageButton()
+                    .setCustomId('no')
+                    .setLabel('رفض')
+                    .setStyle('DANGER')
+            );
 
+        await interaction.reply({ content: 'تم رفع البلاغ بنجاح', ephemeral: true });
+        await interaction.channel.send({ embeds: [embed], components: [row] });
+        if (Evidence) {
+            await interaction.channel.send({ files: [Evidence] });
+        }
+    }
+});
 
+// Handle button interactions
+client.on('interactionCreate', async interaction => {
+    if (!interaction.isButton()) return;
 
+    if (interaction.customId === 'ok') {
+        const member = await interaction.guild.members.fetch(interaction.user.id);
+        const requiredRole = interaction.guild.roles.cache.get('1248437375340908647');
 
+        if (!member || !requiredRole) {
+            await interaction.reply({ content: 'Error fetching member or role. Please try again.', ephemeral: true });
+            return;
+        }
 
+        if (!member.roles.cache.has(requiredRole.id) && !member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+            await interaction.reply({ content: 'You do not have the required permissions to use this button.', ephemeral: true });
+            return;
+        }
 
+        try {
+            // Retrieve the original message
+            const originalMessage = await interaction.channel.messages.fetch(interaction.message.id);
+            const embed = originalMessage.embeds[0];
 
+            // Send the embed to the specific channel
+            const reportChannel = client.channels.cache.get('1247859747479359488');
+            if (reportChannel && embed) {
+                await reportChannel.send({ embeds: [embed] });
+                await interaction.update({ content: 'تم إرسال البلاغ إلى القناة المحددة بنجاح', components: [] });
+            } else {
+                await interaction.update({ content: 'حدث خطأ أثناء إرسال البلاغ إلى القناة المحددة', components: [] });
+            }
+        } catch (error) {
+            console.error('Error sending embed:', error);
+            await interaction.update({ content: 'حدث خطأ أثناء معالجة طلبك.', components: [] });
+        }
+    } else if (interaction.customId === 'no') {
+        await interaction.update({ content: 'تم رفض البلاغ.', components: [] });
+    }
+});
 
-
-
-
-
-
-
-
+// Handle ticket closing
 client.on('interactionCreate', async interaction => {
     if (!interaction.isButton()) return;
 
     if (interaction.customId === 'close_ticket') {
-   
         const confirmationMessage = await interaction.channel.send({
             content: `> ${interaction.user} هل انت متأكد من إغلاق التذكرة `,
             components: [
@@ -636,38 +674,20 @@ client.on('interactionCreate', async interaction => {
                 confirmationMessage.edit({ content: 'انتهى الوقت، لم يتم تأكيد إغلاق التذكرة.', components: [] });
             }
         });
-      
-    } 
+    }
 });
-
-
-
-
-
-
-
-
-
 
 client.on('interactionCreate', async (interaction) => {
     if (!interaction.isButton()) return;
 
-    if (interaction.customId === 'claim_ticket') {
-      
+    if (interaction.customId.startsWith('claim_ticket')) {
         const userId = interaction.user.id;
-        const user = interaction.guild.members.cache.get(userId); 
-     
-        
-           if (
-            !user.permissions.has('ADMINISTRATOR') &&
-            !user.roles.cache.has('1243117940581208074') 
-        ) {
+        const user = interaction.guild.members.cache.get(userId);
+
+        if (!user.roles.cache.has('1243117940581208074')) {
             await interaction.reply({ content: 'هنهزر يسطا ؟؟', ephemeral: true });
             return;
         }
-        let userPoints = db.get(`points_${userId}`) || 0;
-        userPoints++;
-        db.set(`points_${userId}`, userPoints);
 
         const embed = new MessageEmbed()
             .setDescription(`**تم استلام تذكرة ${interaction.channel} من قبل الاداري ${interaction.user}**`)
@@ -675,19 +695,16 @@ client.on('interactionCreate', async (interaction) => {
             .setThumbnail(interaction.guild.iconURL())
             .setColor('DARK_BLUE');
 
+        // Fetch the original message to update the button
         const originalMessage = await interaction.channel.messages.fetch(interaction.message.id);
 
-        // Create a new action row array to hold the updated components
-        const updatedComponents = [];
-
-        // Loop through the original message components and update the button
-        originalMessage.components.forEach(actionRow => {
+        const updatedComponents = originalMessage.components.map(actionRow => {
             const updatedActionRow = new MessageActionRow();
             actionRow.components.forEach(component => {
                 if (component.customId === 'claim_ticket') {
                     updatedActionRow.addComponents(
                         new MessageButton()
-                            .setCustomId('unClaim_ticket')
+                            .setCustomId(`unClaim_ticket_${userId}`)
                             .setLabel('UnClaim')
                             .setStyle('SECONDARY')
                     );
@@ -695,81 +712,77 @@ client.on('interactionCreate', async (interaction) => {
                     updatedActionRow.addComponents(component);
                 }
             });
-            updatedComponents.push(updatedActionRow);
+            return updatedActionRow;
         });
 
         await originalMessage.edit({ components: updatedComponents });
-        await interaction.reply({ embeds: [embed] });
 
         // Update permissions for the three roles
-        interaction.channel.permissionOverwrites.edit(interaction.user.id, {
+        await interaction.channel.permissionOverwrites.edit(interaction.user.id, {
             SEND_MESSAGES: true,
             VIEW_CHANNEL: true,
             READ_MESSAGE_HISTORY: true,
-          });
+        });
 
-          const roleid = '1243117940581208074'
-            await interaction.channel.permissionOverwrites.edit(roleid, {
-                SEND_MESSAGES: false,
-                VIEW_CHANNEL: true,
-                READ_MESSAGE_HISTORY: false,
-            });
+        const roleid = '1243117940581208074';
+        await interaction.channel.permissionOverwrites.edit(roleid, {
+            SEND_MESSAGES: false,
+            VIEW_CHANNEL: true,
+        });
 
+        // Add point to the user
+        let currentPoints;
+        try {
+            currentPoints = await db.get(`${userId}.points`) || 0;
+        } catch (error) {
+            currentPoints = 0;
+        }
+        currentPoints += 1;
+        await db.set(`${userId}.points`, currentPoints);
+
+        await interaction.reply({ embeds: [embed] });
+        await interaction.followUp({ content: `You've been awarded 1 point! You now have ${currentPoints} points.`, ephemeral: true });
     }
-});
 
+    if (interaction.customId.startsWith('unClaim_ticket')) {
+        const [_, __, originalUserId] = interaction.customId.split('_');
+        const userId = interaction.user.id;
 
+        if (userId !== originalUserId) {
+            await interaction.reply({ content: 'Only the user who claimed the ticket can unclaim it.', ephemeral: true });
+            return;
+        }
 
-client.on('interactionCreate', async (interaction) => {
-    if (!interaction.isButton()) return;
+        const user = interaction.guild.members.cache.get(userId);
 
-    if (interaction.customId === 'unClaim_ticket') {  
-          const userId = interaction.user.id;
-        const user = interaction.guild.members.cache.get(userId); 
-       
-               let userPoints = db.get(`points_${userId}`) || 0;
-        userPoints = Math.max(0, userPoints - 1); // Ensure points don't go below 0
-        db.set(`points_${userId}`, userPoints);
-        if (
-            !user.permissions.has('ADMINISTRATOR') &&
-            !user.roles.cache.has('1243117940581208074') 
-            
-           ) {
-                await interaction.reply({ content: 'هنهزر يسطا ؟؟', ephemeral: true });
-                return;
-            }
+        if (!user.permissions.has('ADMINISTRATOR') && !user.roles.cache.has('1243117940581208074')) {
+            await interaction.reply({ content: 'هنهزر يسطا ؟؟', ephemeral: true });
+            return;
+        }
 
         const embed = new MessageEmbed()
             .setColor('BLUE')
-            .setDescription(
-                `** تم الغاء استلام التذكره ${interaction.channel} من قبل الاداري ${interaction.user}**`
-            )
+            .setDescription(`**تم الغاء استلام التذكره ${interaction.channel} من قبل الاداري ${interaction.user}**`)
             .setAuthor(interaction.guild.name, interaction.guild.iconURL())
             .setThumbnail(interaction.guild.iconURL());
 
         await interaction.reply({ embeds: [embed] });
 
         // Update permissions for the specified roles
-       const roleId = '1243117940581208074'
-
-            await interaction.channel.permissionOverwrites.edit(roleId, {
-                SEND_MESSAGES: true,
-                VIEW_CHANNEL: true,
-                READ_MESSAGE_HISTORY: true,
-            });
-       
+        const roleId = '1243117940581208074';
+        await interaction.channel.permissionOverwrites.edit(roleId, {
+            SEND_MESSAGES: true,
+            VIEW_CHANNEL: true,
+            READ_MESSAGE_HISTORY: true,
+        });
 
         // Fetch the original message to update the button
         const originalMessage = await interaction.channel.messages.fetch(interaction.message.id);
 
-        // Create a new action row array to hold the updated components
-        const updatedComponents = [];
-
-        // Loop through the original message components and update the button
-        originalMessage.components.forEach(actionRow => {
+        const updatedComponents = originalMessage.components.map(actionRow => {
             const updatedActionRow = new MessageActionRow();
             actionRow.components.forEach(component => {
-                if (component.customId === 'unClaim_ticket') {
+                if (component.customId === `unClaim_ticket_${originalUserId}`) {
                     updatedActionRow.addComponents(
                         new MessageButton()
                             .setCustomId('claim_ticket')
@@ -780,11 +793,22 @@ client.on('interactionCreate', async (interaction) => {
                     updatedActionRow.addComponents(component);
                 }
             });
-            updatedComponents.push(updatedActionRow);
+            return updatedActionRow;
         });
 
-        // Edit the original message with the updated components
         await originalMessage.edit({ components: updatedComponents });
+
+        // Deduct a point from the user
+        let currentPoints;
+        try {
+            currentPoints = await db.get(`${userId}.points`) || 0;
+        } catch (error) {
+            currentPoints = 0;
+        }
+        currentPoints -= 1;
+        await db.set(`${userId}.points`, currentPoints);
+
+        await interaction.followUp({ content: `You've lost 1 point. You now have ${currentPoints} points.`, ephemeral: true });
     }
 });
 
@@ -1086,7 +1110,7 @@ async function post(interaction, roleName,  rolePrice , channelId) {
         let components = [
             new MessageActionRow().addComponents(
                 new MessageButton()
-                    .setCustomId('modal1')
+                    .setCustomId('modalf')
                     .setLabel('نشر المنشور ')
                     .setStyle('SECONDARY')
             )
@@ -1108,9 +1132,9 @@ async function post(interaction, roleName,  rolePrice , channelId) {
     client.on('interactionCreate', async interaction => {
         if (!interaction.isButton()) return;
 
-        if (interaction.customId === 'modal1') {
+        if (interaction.customId === 'modalf') {
 
-            const modal1 = new Modal()
+            const modal = new Modal()
 			.setCustomId('a2')
 			.setTitle('انشر منشورك');
 	
@@ -1124,9 +1148,9 @@ async function post(interaction, roleName,  rolePrice , channelId) {
 		
 		const secondActionRow = new MessageActionRow().addComponents(here1);
 
-		modal1.addComponents(secondActionRow);
+		modal.addComponents(secondActionRow);
 		
-		await interaction.showModal(modal1);
+		await interaction.showModal(modal);
         }
 
     })
@@ -1152,6 +1176,159 @@ async function post(interaction, roleName,  rolePrice , channelId) {
 
 
 }
+
+
+
+
+
+
+
+async function asz(interaction, roleName,  rolePrice , channelId) {
+    const userId = interaction.user.id;
+    const member = await interaction.guild.members.fetch(userId);
+    const idprobot = '282859044593598464';
+    const idbank = '950098048443371521';
+    const tax = Math.floor(rolePrice * (20 / 19) + 1);
+
+
+    embedMessage = new MessageEmbed()
+        .setThumbnail(interaction.guild.iconURL())
+        .setAuthor(interaction.guild.name, interaction.guild.iconURL())
+        .setFooter(interaction.guild.name, interaction.guild.iconURL())
+        .setTitle(`عملية شراء إعلان ${roleName} || 👑`)
+        .setDescription(`قم بالتحويل ل <@${idbank}>\n#credit ${idbank} ${tax}`)
+        .setColor('DARK_BLUE');
+
+    components = [
+        new MessageActionRow().addComponents(
+            new MessageButton()
+            .setCustomId(`copy:${roleName}:${rolePrice}`)
+                .setLabel('نسخ التحويل ')
+                .setStyle('SECONDARY')
+        )
+    ];
+
+    await interaction.update({ embeds: [embedMessage], components });
+
+    const filter = (response) => {
+        const expectedContent = `**:moneybag: | ${interaction.user.username}, has transferred \`$${rolePrice}\` to <@!${idbank}> **`;
+        console.log(expectedContent)
+        console.log(`Received message: ${response.content}`);
+        return response.content.includes(expectedContent) && response.author.id === idprobot;
+    };
+    
+    
+    const collector = interaction.channel.createMessageCollector({
+        filter,
+        time: 30000,
+    });
+
+    collector.on("collect", async (response) => {
+        embedMessage.setDescription(`
+            عملية شراء إعلان 🜲 || ${roleName} :
+            > - يمكنك نشر الإعلان الان 🜲 || ${roleName} : بسعر ${rolePrice} بنجاح `);
+
+
+        let components = [
+            new MessageActionRow().addComponents(
+                new MessageButton()
+                    .setCustomId('modal1')
+                    .setLabel('نشر الإعلان ')
+                    .setStyle('SECONDARY')
+            )
+        ];
+        await interaction.editReply({ embeds: [embedMessage], components });
+        
+        collector.stop();
+    });
+
+    collector.on("end", async (collected) => {
+        if (collected.size === 0) {
+            embedMessage.setDescription(`لقد انتهى الوقت، لا تقم بالتحويل  ${interaction.user}`);
+            await interaction.editReply({ embeds: [embedMessage], components: [] });
+        }
+    });
+
+
+    
+    client.on('interactionCreate', async interaction => {
+        if (!interaction.isButton()) return;
+
+        if (interaction.customId === 'modal1') {
+
+            const modal1 = new Modal()
+			.setCustomId('a3')
+			.setTitle('انشر منشورك');
+	
+		
+		const here1 = new TextInputComponent()
+			.setCustomId('here3')
+			.setLabel("قم بكتابة المنشور")
+	
+			.setStyle('PARAGRAPH');
+		
+		
+		const secondActionRow = new MessageActionRow().addComponents(here1);
+
+		modal1.addComponents(secondActionRow);
+		
+		await interaction.showModal(modal1);
+        }
+
+    })
+
+
+    client.on('interactionCreate', async interaction => {
+        if (!interaction.isModalSubmit()) return;
+        if (interaction.customId === 'a3') {
+
+
+            const here = interaction.fields.getTextInputValue('here3');
+
+        const channel = await client.channels.fetch(channelId);
+
+          
+            embedMessage.setDescription(` تم نشر المنشور بنجاح في ${channel} `)
+              await interaction.update({ embeds: [embedMessage], components: [] });  
+	    
+        channel.send({content : ` ${here} \n @${roleName}`})
+
+        }
+    });
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 async function pos(interaction, roleName, rolePrice, categoryId) {
     const userId = interaction.user.id;
@@ -1605,8 +1782,6 @@ client.on('interactionCreate', async interaction => {
 
 
 
-
-
 client.on('interactionCreate', async interaction => {
     if (!interaction.isButton()) return;
 
@@ -1615,22 +1790,23 @@ client.on('interactionCreate', async interaction => {
         const member = await interaction.guild.members.fetch(userId);
 
         let roleIds = [
+           
             '1243117961565306970',
+            '1243117960436908092',
             '1243117959069696074',
             '1243117957777985578',
-            '1243117960436908092',
-            '1254369884629106791',
+            '1243117955810590822',
             '1243117953168445530',
             '1243117952107020368',
             '1243117951008116736',
             '1254804292494430259',
             '1254805928268660817',
-            '1254804292494430260', // Corrected to unique key '1254804292494430260'
+            '1254806199313109003'
         ];
 
         let rolesFound = roleIds.filter(roleId => member.roles.cache.has(roleId));
 
-        console.log(`Roles found: ${rolesFound.join(', ')}`); // Debug output
+        console.log(`Roles found: ${rolesFound.join(', ')}`);
 
         if (rolesFound.length > 0) {
             const roleMentions = rolesFound.map(roleId => `<@&${roleId}>`).join(', ');
@@ -1644,7 +1820,7 @@ client.on('interactionCreate', async interaction => {
             let components = [
                 new MessageActionRow().addComponents(
                     new MessageButton()
-                        .setCustomId('ttf')
+                        .setCustomId('memory')
                         .setLabel('نقل')
                         .setStyle('SECONDARY'),
                 )
@@ -1665,11 +1841,8 @@ client.on('interactionCreate', async interaction => {
 
 
 
-
 client.on('interactionCreate', async interaction => {
-    if (!interaction.isButton()) return;
-
-    if (interaction.customId === 'ttf') {
+    if (interaction.customId === 'memory') {
         let embedMessage = new MessageEmbed()
             .setColor('DARK_BLUE')
             .setAuthor(interaction.guild.name, interaction.guild.iconURL())
@@ -1683,27 +1856,30 @@ client.on('interactionCreate', async interaction => {
 
         collector.on('collect', async message => {
             const targetUserId = message.content.trim();
+            console.log('Target user ID:', targetUserId); // Log target user ID
 
             const targetMember = await interaction.guild.members.fetch(targetUserId).catch(() => null);
             if (!targetMember) {
-                return interaction.reply({ content: 'لم استطع العثور على الحساب يرجى ادخال الحساب بشكل صحيح', ephemeral: true });
+                return interaction.followUp({ content: 'لم استطع العثور على الحساب يرجى ادخال الحساب بشكل صحيح', ephemeral: true });
             }
 
             let roleIds = [
+           
+                '1243117961565306970',
+                '1243117960436908092',
+                '1243117959069696074',
+                '1243117957777985578',
+                '1243117955810590822',
+                '1243117953168445530',
+                '1243117952107020368',
+                '1243117951008116736',
                 '1254804292494430259',
                 '1254805928268660817',
-                '1254806199313109003',
-                '1243117951008116736',
-                '1243117952107020368',
-                '1243117953168445530',
-                '1243117955810590822',
-                '1243117960436908092',
-                '1243117957777985578',
-                '1243117959069696074',
-                '1243117961565306970', // Corrected to unique key '1254804292494430260'
+                '1254806199313109003'
             ];
 
             let rolesFound = roleIds.filter(roleId => interaction.member.roles.cache.has(roleId));
+            console.log('Roles to transfer:', rolesFound); // Log roles to transfer
 
             try {
                 // Transfer roles
@@ -1719,18 +1895,18 @@ client.on('interactionCreate', async interaction => {
                     .setColor('DARK_BLUE')
                     .setAuthor(interaction.guild.name, interaction.guild.iconURL())
                     .setThumbnail(interaction.guild.iconURL())
-                    .setDescription(`الرتب ${roleMentions}تم نقلها للحساب  <@${targetMember.user.id}>.`);
+                    .setDescription(`الرتب ${roleMentions}تم نقلها للحساب <@${targetMember.user.id}>.`);
 
-                await interaction.editReply({ embeds: [confirmationEmbed] });
+                await interaction.followUp({ embeds: [confirmationEmbed] });
             } catch (error) {
                 console.error('Error transferring roles:', error);
-                await interaction.editReply({ content: 'Failed to transfer roles. Please try again later.', ephemeral: true });
+                await interaction.followUp({ content: 'Failed to transfer roles. Please try again later.', ephemeral: true });
             }
         });
 
         collector.on('end', collected => {
             if (collected.size === 0) {
-                interaction.editReply({ content: 'No user ID provided. Interaction cancelled.', ephemeral: true });
+                interaction.followUp({ content: 'No user ID provided. Interaction cancelled.', ephemeral: true });
             }
         });
     }
@@ -1751,11 +1927,10 @@ client.on('interactionCreate', async interaction => {
 
 
 
-
 const rolePrices = {
     '1249799246475952209':15000,
     '1243117965881376798':25000 ,
-    '1243117964144808002': 35000,
+    '': 35000,
 };
 
 client.on('interactionCreate', async interaction => {
@@ -2285,54 +2460,12 @@ async function handleRoleSelection(interaction, roleName, roleId, rolePrice) {
 
 
 
-client.on('messageCreate', async message => {
-    if (message.author.bot) return; 
-
-    if (message.content.toLowerCase() === '!leaderboard') {
-        const leaderboard = getLeaderboard();
-        const embed = generateLeaderboardEmbed(leaderboard);
-        message.channel.send({ embeds: [embed] });
-    }
-
-  
-    if (message.content.toLowerCase() === '!points') {
-        const userId = message.author.id;
-        const userPoints = db.get(`points_${userId}`) || 0;
-        message.reply(`You have ${userPoints} points.`);
-    }
-});
-
-
-function getLeaderboard() {
-    const allUsers = db.all().filter(data => data.ID.startsWith('points_'));
-    const sortedUsers = allUsers.sort((a, b) => b.data - a.data); 
-    return sortedUsers.slice(0, 10); 
-}
-
-
-function generateLeaderboardEmbed(leaderboard) {
-    const embed = new MessageEmbed()
-        .setTitle('Leaderboard')
-        .setColor('DARK_BLUE');
-
-    leaderboard.forEach((user, index) => {
-        const userId = user.ID.split('_')[1]; 
-        const userName = client.users.cache.get(userId)?.username || 'Unknown User'; 
-        const userPoints = user.data || 0; 
-        embed.addField(`${index + 1}. ${userName}`, `Points: ${userPoints}`, true);
-    });
-
-    return embed;
-}
-
-
 
 const warnRoles = {
     1: '1249799246475952209',
     2: '1243117965881376798',
-    3: '1243117964144808002'
+    3: '1243117961565306970'
 };
-
 
 
 client.on('messageCreate', async message => {
@@ -2399,10 +2532,14 @@ client.on('interactionCreate', async interaction => {
 
 
 
-
-
 client.on('interactionCreate', async interaction => {
     if (interaction.isButton() && interaction.customId.startsWith('escalate_ticket')) {
+
+        const user = interaction.guild.members.cache.get(interaction.user.id);
+        if (!user.roles.cache.has('1243117940581208074')) {
+            await interaction.reply({ content: 'هنهزر يسطا ؟', ephemeral: true });
+            return;
+        }
 
         const selectMenu = new MessageSelectMenu()
             .setCustomId('ticket_action')
@@ -2476,10 +2613,10 @@ client.on('interactionCreate', async interaction => {
 
         await interaction.showModal(modal);
     } else if (interaction.isModalSubmit()) {
+        const channel = interaction.channel;
+
         if (interaction.customId === 'add_member_modal') {
             const memberId = interaction.fields.getTextInputValue('member_id');
-            const channel = interaction.channel;
-
             try {
                 const member = await interaction.guild.members.fetch(memberId);
                 await channel.permissionOverwrites.create(member, { VIEW_CHANNEL: true, SEND_MESSAGES: true });
@@ -2490,8 +2627,6 @@ client.on('interactionCreate', async interaction => {
             }
         } else if (interaction.customId === 'rename_channel_modal') {
             const newChannelName = interaction.fields.getTextInputValue('new_channel_name');
-            const channel = interaction.channel;
-
             try {
                 await channel.setName(newChannelName);
                 await interaction.reply({ content: `Successfully renamed the channel to ${newChannelName}.`, ephemeral: true });
@@ -2501,8 +2636,6 @@ client.on('interactionCreate', async interaction => {
             }
         } else if (interaction.customId === 'delete_user_modal') {
             const memberId = interaction.fields.getTextInputValue('delete_member_id');
-            const channel = interaction.channel;
-
             try {
                 const member = await interaction.guild.members.fetch(memberId);
                 await channel.permissionOverwrites.delete(member);
@@ -2514,7 +2647,6 @@ client.on('interactionCreate', async interaction => {
         }
     }
 });
-
 
 
 
@@ -2592,15 +2724,157 @@ client.on('interactionCreate', async interaction => {
         }
     }
 });
+client.on('messageCreate', async (message) => {
+    if (message.author.bot || !message.guild) return;
+    if (!message.content.startsWith(prefix)) return;
 
+    const args = message.content.slice(prefix.length).trim().split(/ +/);
+    const command = args.shift().toLowerCase();
 
+    switch (command) {
+        case 'addpoint':
+            if (!message.member.permissions.has('ADMINISTRATOR')) {
+                return message.reply('You do not have permission to use this command.');
+            }
+            const addUser = message.mentions.users.first() || message.guild.members.cache.get(args[0]);
+            if (!addUser) return message.reply('Please mention a valid user.');
 
+            const addPoints = parseInt(args[1]);
+            if (isNaN(addPoints)) return message.reply('Please provide a valid number of points.');
 
+            try {
+                let currentPointsAdd = await db.get(`${addUser.id}.points`) || 0;
+                currentPointsAdd += addPoints;
+                await db.set(`${addUser.id}.points`, currentPointsAdd);
 
+                message.reply(`${addPoints} points have been added to ${addUser.tag}. They now have ${currentPointsAdd} points.`);
+            } catch (error) {
+                console.error(error);
+                message.reply('There was an error adding points.');
+            }
+            break;
 
+        case 'removepoint':
+            if (!message.member.permissions.has('ADMINISTRATOR')) {
+                return message.reply('You do not have permission to use this command.');
+            }
+            const removeUser = message.mentions.users.first() || message.guild.members.cache.get(args[0]);
+            if (!removeUser) return message.reply('Please mention a valid user.');
 
+            const removePoints = parseInt(args[1]);
+            if (isNaN(removePoints)) return message.reply('Please provide a valid number of points.');
 
+            try {
+                let currentPointsRemove = await db.get(`${removeUser.id}.points`) || 0;
+                currentPointsRemove -= removePoints;
+                if (currentPointsRemove < 0) currentPointsRemove = 0;
+                await db.set(`${removeUser.id}.points`, currentPointsRemove);
 
+                message.reply(`${removePoints} points have been removed from ${removeUser.tag}. They now have ${currentPointsRemove} points.`);
+            } catch (error) {
+                console.error(error);
+                message.reply('There was an error removing points.');
+            }
+            break;
+
+        case 'mypoints':
+            try {
+                let userPoints = await db.get(`${message.author.id}.points`) || 0;
+                message.reply(`You have ${userPoints} points.`);
+            } catch (error) {
+                console.error(error);
+                message.reply('There was an error retrieving your points.');
+            }
+            break;
+
+        case 'points':
+            const mentionedUser = message.mentions.users.first() || message.guild.members.cache.get(args[0]);
+            if (!mentionedUser) return message.reply('Please mention a valid user.');
+
+            try {
+                let mentionedUserPoints = await db.get(`${mentionedUser.id}.points`) || 0;
+                message.reply(`${mentionedUser.tag} has ${mentionedUserPoints} points.`);
+            } catch (error) {
+                console.error(error);
+                message.reply('There was an error retrieving the user\'s points.');
+            }
+            break;
+            case 'leaderboard':
+                try {
+                    // Fetch all data from the database
+                    let allData = await db.all();
+            
+                    // Log the retrieved data to check its structure
+                    console.log('All Data:', allData);
+            
+                    // Process the data into a leaderboard format
+                    let leaderboard = allData.map(([key, value]) => {
+                        // Extract user ID from key by removing the 'DATA = ' prefix and the '.points' suffix
+                        const id = key.replace('DATA = ', '').replace('.points', '');
+                        // Parse value to integer
+                        const points = parseInt(value.replace('VALUE = ', ''));
+                        return {
+                            id: id,
+                            points: isNaN(points) ? 0 : points
+                        };
+                    }).sort((a, b) => b.points - a.points);
+            
+                    // Log the leaderboard to verify its contents
+                    console.log('Leaderboard:', leaderboard);
+            
+                    // Construct the leaderboard message
+                    let leaderboardMessage = 'Leaderboard:\n';
+                    for (let i = 0; i < leaderboard.length && i < 10; i++) {
+                        const user = leaderboard[i];
+                        const member = await message.guild.members.fetch(user.id).catch(() => null); // Fetch member to ensure it's updated
+            
+                        if (member) {
+                            leaderboardMessage += `${i + 1}. ${member.user.tag} - ${user.points} points\n`;
+                        } else {
+                            // If the member is not in cache, handle it
+                            leaderboardMessage += `${i + 1}. User not found - ${user.points} points\n`;
+                        }
+                    }
+            
+                    // Send the leaderboard message
+                    message.reply(leaderboardMessage || 'No data available for the leaderboard.');
+            
+                } catch (error) {
+                    console.error('Error fetching leaderboard:', error);
+                    message.reply('There was an error retrieving the leaderboard.');
+                }
+                break;
+        case 'resetpoints':
+            if (!message.member.permissions.has('ADMINISTRATOR')) {
+                return message.reply('You do not have permission to use this command.');
+            }
+            try {
+                let members = message.guild.members.cache.filter(member => !member.user.bot);
+                for (let member of members.values()) {
+                    await db.set(`${member.user.id}.points`, 0);
+                }
+                message.reply('All points have been reset.');
+            } catch (error) {
+                console.error(error);
+                message.reply('There was an error resetting points.');
+            }
+            break;
+
+        default:
+            const embed = new MessageEmbed()
+                .setTitle('Unknown Command')
+                .setDescription('Here are the available commands:')
+                .addField('`!addpoint @user <points>`', 'Adds points to a user (Admin only).')
+                .addField('`!removepoint @user <points>`', 'Removes points from a user (Admin only).')
+                .addField('`!mypoints`', 'Shows your current points.')
+                .addField('`!points @user`', 'Shows the points of a mentioned user.')
+                .addField('`!leaderboard`', 'Shows the top 10 users with the most points.')
+                .addField('`!resetpoints`', 'Resets all points (Admin only).')
+                .setColor('BLUE');
+            message.reply({ embeds: [embed] });
+            break;
+    }
+});
 
 
 
