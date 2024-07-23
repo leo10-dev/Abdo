@@ -1162,7 +1162,7 @@ async function post(interaction, roleName,  rolePrice , channelId) {
 
 
             const here = interaction.fields.getTextInputValue('here1');
-
+		const photo = require('../')
         const channel = await client.channels.fetch(channelId);
 	    const attachment = new MessageAttachment('./line.png');
 
@@ -1170,8 +1170,10 @@ async function post(interaction, roleName,  rolePrice , channelId) {
             embedMessage.setDescription(` تم نشر المنشور بنجاح في ${channel} `)
               await interaction.update({ embeds: [embedMessage], components: [] });  
 	    
-        channel.send({content : `${here} \n \n تواصل مع ${interaction.user} \n @${roleName} ` , files : [attachment]})
-	
+channel.send({
+    content: `${here} \n \n تواصل مع ${interaction.user} \n @${roleName}`,
+    files: [attachment]
+});	
 
         }
     });
