@@ -40,8 +40,8 @@ client.once('ready', () => {
         };
 
         const currentAstTime = utcToAst(currentHour, currentMinute);
-        const openAstTime = { hour: 17, minute: 5 }; // 4:55 PM in 24-hour format
-        const closeAstTime = { hour: 17, minute: 4 }; // 3:54 PM in 24-hour format
+        const openAstTime = { hour: 3, minute: 1 }; // 4:55 PM in 24-hour format
+        const closeAstTime = { hour: 9, minute: 1 }; // 3:54 PM in 24-hour format
 
         const isOpenTime = currentAstTime.hour === openAstTime.hour && currentAstTime.minute === openAstTime.minute;
         const isCloseTime = currentAstTime.hour === closeAstTime.hour && currentAstTime.minute === closeAstTime.minute;
@@ -84,6 +84,19 @@ client.once('ready', () => {
     }, 60000); // Check every minute
 });
 
+
+const { GiveawaysManager } = require('discord-giveaways');
+const manager = new GiveawaysManager(client, {
+    storage: './giveaways.json',
+    default: {
+        botsCanWin: false,
+        embedColor: '#152021',
+        embedColorEnd: '##417a80',
+        reaction: '🎁'
+    }
+});
+
+client.giveawaysManager = manager;
 
 client.on('messageCreate', message => {
 
@@ -1531,14 +1544,16 @@ async function pos(interaction, roleName, rolePrice, categoryId) {
 }
 
 
-async function ads(interaction, roleName, rolePrice, categoryId, deleteTime) {
+async function ads(interaction, roleName, rolePrice, prize, deleteTime) {
     const userId = interaction.user.id;
     const member = await interaction.guild.members.fetch(userId);
-    const idprobot = '282859044593598464';
+   const idprobot = '282859044593598464';
     const idbank = '950098048443371521';
     const tax = Math.floor(rolePrice * (20 / 19) + 1);
 
-    if (deleteTime < 1) deleteTime = 300; 
+    // Set a minimum and maximum deleteTime in seconds to avoid overflow
+    if (deleteTime < 300) deleteTime = 300; // Minimum of 5 minutes
+    if (deleteTime > 2147483647 / 1000) deleteTime = 2147483647 / 1000; // Maximum allowable value
 
     let embedMessage = new MessageEmbed()
         .setThumbnail(interaction.guild.iconURL())
@@ -1564,8 +1579,7 @@ async function ads(interaction, roleName, rolePrice, categoryId, deleteTime) {
         console.log(`Received message: ${response.content}`);
         return response.content.includes(expectedContent) && response.author.id === idprobot;
     };
-    
-    
+
     const collector = interaction.channel.createMessageCollector({
         filter,
         time: 30000,
@@ -1573,7 +1587,6 @@ async function ads(interaction, roleName, rolePrice, categoryId, deleteTime) {
 
     collector.on("collect", async (response) => {
         embedMessage.setDescription(`**⏬ اضغط على الزر الذي في الاسفل لي نشر إعلانك **`);
-
 
         let components = [
             new MessageActionRow().addComponents(
@@ -1601,7 +1614,7 @@ async function ads(interaction, roleName, rolePrice, categoryId, deleteTime) {
         if (interaction.customId === 'modal3') {
             const modal3 = new Modal()
                 .setCustomId('a13')
-                .setTitle('انشر منشورك');
+                .setTitle('انشر اعلانك');
 
             const roomname = new TextInputComponent()
                 .setCustomId('roomname')
@@ -1610,7 +1623,7 @@ async function ads(interaction, roleName, rolePrice, categoryId, deleteTime) {
 
             const here2 = new TextInputComponent()
                 .setCustomId('here3')
-                .setLabel("قم بكتابة المنشور")
+                .setLabel("قم بكتابة الإعلان")
                 .setStyle('PARAGRAPH');
 
             const firstActionRow = new MessageActionRow().addComponents(roomname);
@@ -1630,28 +1643,60 @@ async function ads(interaction, roleName, rolePrice, categoryId, deleteTime) {
             try {
                 const newChannel = await interaction.guild.channels.create(roomname, {
                     type: 'GUILD_TEXT',
-                    position: 0, // Position at the top of the channel list
+                    position: 0,
                     permissionOverwrites: [
                         {
                             id: interaction.guild.id,
                             allow: [Permissions.FLAGS.VIEW_CHANNEL],
                             deny: [Permissions.FLAGS.SEND_MESSAGES],
                         },
-                        {
-                            id: userId,
-                            allow: [Permissions.FLAGS.SEND_MESSAGES],
-                        },
                     ],
                 });
 
                 await newChannel.send({ content: `@everyone ${here}` });
 
-                await interaction.reply({ content: `تم نشر المنشور بنجاح في ${newChannel}`, ephemeral: true });
+                // Calculate the giveaway duration in milliseconds
+                const giveawayDuration = (deleteTime - 7200) * 1000; // deleteTime minus 2 hours in milliseconds
+
+                client.giveawaysManager.start(newChannel, {
+                    duration: giveawayDuration,
+                    prize: prize,
+                    winnerCount: 1,
+                    hostedBy: interaction.user,
+                    messages: {
+                        giveaway: '🎉 **Hollywood** 🎉',
+                        giveawayEnded: '🎉 **GIVEAWAY ENDED** 🎉',
+                        timeRemaining: 'Time remaining: **{duration}**!',
+                        inviteToParticipate: 'React with 🎉 to participate!',
+                        winMessage: 'Congratulations, {winners}! You won **{prize}**!',
+                        embedFooter: 'Giveaways',
+                        noWinner: 'Giveaway cancelled, no valid participations.',
+                        hostedBy: 'Hosted by: Hollywood',
+                        winners: 'Winner(s):',
+                        endedAt: 'Ended at',
+                        units: {
+                            seconds: 'seconds',
+                            minutes: 'minutes',
+                            hours: 'hours',
+                            days: 'days',
+                            pluralS: false
+                        }
+                    }
+                });
+
+                const embed = new MessageEmbed()
+                    .setColor('DARKER_GREY')
+                    .setDescription(`**تم نشر إعلانك بنجاح**`)
+                    .setFooter(interaction.guild.name, interaction.guild.iconURL())
+                    .setThumbnail(interaction.guild.iconURL())
+                    .setAuthor(interaction.guild.name, interaction.guild.iconURL())
+                    .setTimestamp();
+
+                await interaction.update({ embeds: [embed], components: [] });
 
                 setTimeout(async () => {
                     await newChannel.delete();
                 }, deleteTime * 1000);
-
             } catch (error) {
                 console.error('Error creating or sending message to the new channel:', error);
                 await interaction.reply({ content: 'حدث خطأ أثناء محاولة إنشاء ونشر المنشور في القناة الجديدة. يرجى المحاولة مرة أخرى.', ephemeral: true });
@@ -1659,6 +1704,7 @@ async function ads(interaction, roleName, rolePrice, categoryId, deleteTime) {
         }
     });
 }
+
 
 
 
@@ -1737,12 +1783,12 @@ client.on('interactionCreate', async interaction => {
 
             case 'MentionHereGiveways' :
 
-            post(interaction , 'here' , 800000 , '1243118143547904061' )
+            ads(interaction , 'here' , 800000 ,'1m', '1243118143547904061' )
 
             break ;
             case 'MentionEveryoneGiveways' :
 
-            post(interaction , 'everyone' , 1600000 , '1243118143547904061' )
+            ads(interaction , 'everyone' , 1600000 ,'1.5m', '1243118143547904061' )
 
             break ;
             case 'MentionEveryone' :
@@ -1759,12 +1805,12 @@ client.on('interactionCreate', async interaction => {
 
             case 'MMM1' :
 
-            ads(interaction , 'everyone' , 4000000 , '1255876596116750407' , 259200 )
+            ads(interaction , 'everyone' , 4000000 , '3m','1255876596116750407' , 259200 )
 
             break ;
             case 'MMM2' :
 
-            ads(interaction , 'everyone' , 7000000 , '1255876596116750407' , 604800)
+            ads(interaction , 'everyone' , 7000000 ,"5m", '1255876596116750407' , 604800)
 
             break;
 
@@ -2321,7 +2367,7 @@ client.on('interactionCreate', async interaction => {
 
         switch (selectedValue) {
             case 'Goat':
-                await handleRoleSelection(interaction, ' Goat S', '1254804292494430259 ', 15000000);
+                await handleRoleSelection(interaction, ' Goat S', '1254804292494430259 ', 1500000);
                 break;
             case 'Dragon':
                 await handleRoleSelection(interaction, 'Dragon S', '1254805928268660817 ', 700000);
@@ -2861,7 +2907,7 @@ client.on('messageCreate', async (message) => {
             }
             break;
 
-        default:
+         case 'add':
             const embed = new MessageEmbed()
                 .setTitle('Unknown Command')
                 .setDescription('Here are the available commands:')
